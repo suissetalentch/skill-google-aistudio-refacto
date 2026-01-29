@@ -5,7 +5,7 @@
 AI Studio puts all state in the root `App` component and drills props down:
 
 ```tsx
-// exemple-bad-aistudio/App.tsx
+// examples/before/App.tsx
 const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
@@ -144,21 +144,27 @@ export const useCVStore = create<CVState>((set) => ({
 // src/features/cv-optimizer/components/ResumeForm.tsx
 import { useCVStore } from '../store/useCVStore';
 
-export function ResumeForm() {
-  const { isLoading, setLoading, setResult, setError } = useCVStore();
-
-  const handleSubmit = async (text: string, skills: string) => {
-    setLoading(true);
-    try {
-      const data = await analyzeAndOptimizeCV(text, skills);
-      setResult(data);
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
-
-  // No props needed — reads directly from store
+interface ResumeFormProps {
+  onSubmit: (data: CVFormData) => void;
 }
+
+export function ResumeForm({ onSubmit }: ResumeFormProps) {
+  const { isLoading } = useCVStore();
+  // isLoading read from store (no prop drilling)
+  // onSubmit kept as prop — App orchestrates the submission logic
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <button disabled={isLoading}>Submit</button>
+    </form>
+  );
+}
+```
+
+**Design choice:** Read-only state (`isLoading`, `error`, `result`) comes from the store.
+The `onSubmit` callback remains a prop because `App` orchestrates the submission workflow
+(setting loading, calling the service, updating the store). This is an acceptable hybrid —
+stores own shared state, parent owns orchestration.
 ```
 
 ## Rules

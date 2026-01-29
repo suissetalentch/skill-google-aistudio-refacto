@@ -5,7 +5,7 @@
 AI Studio generates TypeScript code with legacy React patterns and loose type safety:
 
 ```tsx
-// exemple-bad-aistudio/components/Header.tsx
+// examples/before/components/Header.tsx
 import React from 'react';
 
 const Header: React.FC = () => {
@@ -16,7 +16,7 @@ export default Header;
 ```
 
 ```tsx
-// exemple-bad-aistudio/App.tsx
+// examples/before/App.tsx
 import React, { useState } from 'react';
 
 const App: React.FC = () => {
@@ -31,13 +31,13 @@ export default App;
 ```
 
 ```json
-// exemple-bad-aistudio/tsconfig.json — no strict mode
+// examples/before/tsconfig.json — no strict mode
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "ESNext",
-    "jsx": "react-jsx",
-    "strict": false
+    "jsx": "react-jsx"
+    // Note: "strict" field is absent — defaults to false
   }
 }
 ```

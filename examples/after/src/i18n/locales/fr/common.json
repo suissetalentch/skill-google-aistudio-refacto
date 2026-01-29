@@ -1,0 +1,71 @@
+{
+  "header": {
+    "title": "Grenoble Career Scout",
+    "subtitle": "Optimisez votre CV pour le marché alpin"
+  },
+  "form": {
+    "title": "Optimiseur de Carrière - Grenoble",
+    "description": "Vos données ont été actualisées (Master 2 Obtenu). Cliquez sur \"Optimiser\".",
+    "cvLabel": "Contenu principal du CV",
+    "cvPlaceholder": "Collez votre CV ici...",
+    "skillsLabel": "Compétences Additionnelles (optionnel)",
+    "skillsPlaceholder": "Ex: Permis B, Photoshop, Management Agile, SQL...",
+    "skillsHint": "Séparez les compétences par des virgules.",
+    "submitButton": "Optimiser mon profil Graduate & Voir les salaires",
+    "backButton": "Modifier mon CV source",
+    "printButton": "Imprimer mon CV"
+  },
+  "status": {
+    "title": "Statut & Demandes :",
+    "graduate": "Profil Jeune Diplômé Master 2 (Cadre Isère)",
+    "removeHotel": "Suppression auto de \"Comfort Hotel Meylan\"",
+    "updateFlex": "Expérience \"Flex\" mise à jour à ce jour"
+  },
+  "loading": {
+    "step1": "Analyse de votre profil Master 2...",
+    "step2": "Suppression de l'expérience Hotel Meylan...",
+    "step3": "Actualisation de votre poste chez Flex...",
+    "step4": "Scrutage du marché de l'emploi à Grenoble...",
+    "step5": "Optimisation pour les algorithmes ATS...",
+    "step6": "Calcul de votre potentiel salarial cadre...",
+    "step7": "Génération du design premium...",
+    "step8": "Finalisation de votre stratégie de carrière..."
+  },
+  "sidebar": {
+    "howItWorks": "Comment ça marche ?",
+    "howItWorksDesc": "Notre IA analyse votre profil actuel, applique les modifications demandées, et scrute le marché de l'emploi à Grenoble en temps réel pour vous suggérer le poste le plus lucratif.",
+    "whyGrenoble": "Pourquoi Grenoble ?",
+    "whyGrenobleTitle": "La Silicon Valley Française",
+    "whyGrenobleDesc": "Avec le CEA, Schneider Electric et STMicroelectronics, la cuvette grenobloise offre des salaires premium pour les profils qualifiés."
+  },
+  "market": {
+    "badge": "ANALYSE DU MARCHÉ GRENOBLOIS",
+    "title": "Opportunité Maximale",
+    "bestJob": "Poste le plus rémunérateur",
+    "salary": "Fourchette Salariale",
+    "reasoning": "Pourquoi ce profil à Grenoble ?",
+    "sources": "Sources vérifiées"
+  },
+  "resume": {
+    "contact": "Contact",
+    "skills": "Expertises",
+    "extras": "Atouts",
+    "summary": "Résumé Stratégique",
+    "experience": "Expériences Professionnelles",
+    "education": "Formation Académique",
+    "footer": "Profil Master 2 Management — Optimisé pour recrutement Isère",
+    "defaultRole": "Manager de Business Unit",
+    "defaultLocation": "Grenoble, France",
+    "defaultCity": "Grenoble"
+  },
+  "errors": {
+    "analysisFailed": "Une erreur est survenue lors de l'analyse. Veuillez réessayer.",
+    "boundaryTitle": "Une erreur est survenue",
+    "boundaryDesc": "L'application a rencontré un problème inattendu. Veuillez réessayer ou recharger la page.",
+    "retry": "Réessayer",
+    "reload": "Recharger la page"
+  },
+  "footer": {
+    "copyright": "Grenoble Career Scout. Propulsé par Gemini AI pour des opportunités alpines."
+  }
+}

@@ -5,7 +5,7 @@
 AI Studio hardcodes all user-facing strings in French directly in JSX:
 
 ```tsx
-// exemple-bad-aistudio/components/Header.tsx
+// examples/before/components/Header.tsx
 <h1 className="text-xl font-bold">
   Grenoble Career Scout
 </h1>
@@ -15,7 +15,7 @@ AI Studio hardcodes all user-facing strings in French directly in JSX:
 ```
 
 ```tsx
-// exemple-bad-aistudio/App.tsx
+// examples/before/App.tsx
 <h3 className="font-bold text-slate-800 mb-2">Comment ça marche ?</h3>
 <p className="text-slate-600 text-sm">
   Notre IA analyse votre profil actuel...
@@ -23,7 +23,7 @@ AI Studio hardcodes all user-facing strings in French directly in JSX:
 ```
 
 ```tsx
-// exemple-bad-aistudio/components/ResumeForm.tsx
+// examples/before/components/ResumeForm.tsx
 <h2 className="text-2xl font-bold">Optimiseur de Carrière - Grenoble</h2>
 <p>Vos données ont été actualisées (Master 2 Obtenu). Cliquez sur "Optimiser".</p>
 <label>Contenu principal du CV</label>

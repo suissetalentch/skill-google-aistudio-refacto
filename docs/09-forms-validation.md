@@ -5,7 +5,7 @@
 AI Studio uses raw `useState` for form management and hardcodes default data:
 
 ```tsx
-// exemple-bad-aistudio/components/ResumeForm.tsx
+// examples/before/components/ResumeForm.tsx
 
 const DEFAULT_CV = `Abdel-Hadi BENHAMMOU
 Responsable Secteur Vente
@@ -58,7 +58,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const cvFormSchema = z.object({
-  cvText: z.string().min(50, 'CV must be at least 50 characters'),
+  cvText: z.string().min(50, 'Le CV doit contenir au moins 50 caractères'),
   additionalSkills: z.string().optional(),
 });
 
@@ -93,15 +93,16 @@ const DEFAULT_CV = `Abdel-Hadi BENHAMMOU
 abdelhadi.ben@icloud.com | +33 6 74 86 76 03...`;
 
 // AFTER — src/features/cv-optimizer/constants/defaults.ts
-export const CV_PLACEHOLDER = `[Your full name]
-[Your email] | [Your phone]
-[City, Country]
+export const CV_PLACEHOLDER = `[Nom complet]
+[Poste actuel]
+[email] | [téléphone]
+[Ville], FRANCE
 
-EXPERIENCE:
-- [Company] ([Role]): [Period]. [Description].
+EXPÉRIENCES:
+- [Entreprise] ([Poste]): [Période]. [Description des missions].
 
-EDUCATION:
-- [School]: [Degree] ([Year])`;
+FORMATION:
+- [École]: [Diplôme] ([Année])`;
 ```
 
 ### Step 2: Add Zod schema
@@ -113,11 +114,11 @@ import { z } from 'zod';
 export const cvFormSchema = z.object({
   cvText: z
     .string()
-    .min(50, 'CV content must be at least 50 characters')
-    .max(10000, 'CV content must not exceed 10,000 characters'),
+    .min(50, 'Le CV doit contenir au moins 50 caractères')
+    .max(10000, 'Le CV ne doit pas dépasser 10 000 caractères'),
   additionalSkills: z
     .string()
-    .max(500, 'Skills must not exceed 500 characters')
+    .max(500, 'Les compétences ne doivent pas dépasser 500 caractères')
     .optional()
     .default(''),
 });
@@ -158,6 +159,8 @@ const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<
 ```bash
 npm install react-hook-form @hookform/resolvers zod
 ```
+
+Note: `@hookform/resolvers` is a **runtime** dependency (used by zodResolver in the browser bundle), not a devDependency.
 
 ## Rules
 

@@ -86,14 +86,18 @@ echo "[3] metadata.json:"; find . -name "metadata.json" -not -path "*/node_modul
 echo "[4] No src/:"; test -d src && echo "  CLEAN" || echo "  DETECTED: flat structure"
 echo "[5] export default:"; grep -rl "export default" . --include="*.tsx" --include="*.ts" 2>/dev/null | head -5 || echo "  CLEAN"
 echo "[6] API key exposed:"; grep -rl "process.env.API_KEY\|process.env.GEMINI" . --include="*.ts" --include="*.tsx" 2>/dev/null || echo "  CLEAN"
+echo "[7] No i18n:"; grep -rql "useTranslation" . --include="*.tsx" 2>/dev/null && echo "  CLEAN" || echo "  DETECTED: no useTranslation"
 echo "[8] React.FC:"; grep -rl "React\.FC\|React\.FunctionComponent" . --include="*.tsx" 2>/dev/null | head -5 || echo "  CLEAN"
 echo "[8b] import React:"; grep -rl "^import React" . --include="*.tsx" 2>/dev/null | head -5 || echo "  CLEAN"
 echo "[9] strict mode:"; grep -l '"strict": true\|"strict":true' tsconfig.json 2>/dev/null || echo "  DETECTED: no strict mode"
 echo "[10] catch any:"; grep -rn "catch.*any" . --include="*.ts" --include="*.tsx" 2>/dev/null || echo "  CLEAN"
 echo "[11] Inline SVG:"; grep -rl "<svg.*viewBox" . --include="*.tsx" 2>/dev/null | head -5 || echo "  CLEAN"
+echo "[12] No cn():"; grep -rql "cn(" . --include="*.tsx" --include="*.ts" 2>/dev/null && echo "  CLEAN" || echo "  DETECTED: no cn() utility"
+echo "[15] Prompts in code:"; grep -rn 'prompt.*=.*`' . --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "constants/" | grep -v "node_modules/" || echo "  CLEAN"
 echo "[16] Unsafe JSON.parse:"; grep -rn "JSON.parse" . --include="*.ts" --include="*.tsx" 2>/dev/null || echo "  CLEAN"
 echo "[17] ErrorBoundary:"; grep -rl "ErrorBoundary" . --include="*.tsx" 2>/dev/null || echo "  DETECTED: no ErrorBoundary"
 echo "[18] Lazy loading:"; grep -rl "React.lazy\|lazy(" . --include="*.tsx" 2>/dev/null || echo "  DETECTED: no lazy loading"
+echo "[19] No Zod:"; grep -rql "z\.object\|z\.string\|zodResolver" . --include="*.ts" --include="*.tsx" 2>/dev/null && echo "  CLEAN" || echo "  DETECTED: no Zod validation"
 echo "[20] manualChunks:"; grep -l "manualChunks" vite.config.* 2>/dev/null || echo "  DETECTED: no manualChunks"
 echo "=== Scan Complete ==="
 ```
@@ -199,10 +203,10 @@ anti-patterns are resolved.
 │  │  patterns│    │  first   │    │  vite    │  │           │
 │  └──────────┘    └──────────┘    └──────────┘  │           │
 │       ▲                                         │           │
-│       │         anti-patterns > 0?              │           │
+│       │         P0+P1 anti-patterns > 0?         │           │
 │       └─────────────────────────────────────────┘           │
 │                                                              │
-│               anti-patterns = 0? ──▶ DONE                   │
+│               P0+P1 = 0? ──▶ DONE                           │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -221,13 +225,13 @@ anti-patterns are resolved.
 | Condition | Action |
 |-----------|--------|
 | All P0+P1 anti-patterns fixed (score 0 on #1-6,8-12,16-17) | PASSED |
-| `npm run build` fails and can't be fixed | STOP — report issue |
-| No improvement after 3 consecutive iterations | STOP — manual intervention |
-| Max 15 iterations reached | STOP — report remaining issues |
+| `npm run build` fails and can't be fixed after 2 retries | STOP — report issue |
+| Anti-pattern count unchanged after 3 consecutive scans | STOP — manual intervention |
+| Max 25 iterations reached | STOP — report remaining issues |
 
 ### Safety Guards
 
-- **Max 15 iterations** to prevent infinite loops
+- **Max 25 iterations** to prevent infinite loops (allows retries for 14 P0+P1 patterns)
 - **Build check** (`npx tsc --noEmit`) after every fix
 - **Git commit** after each successful fix (rollback possible)
 - **One anti-pattern per iteration** — small, verifiable steps

@@ -5,7 +5,7 @@
 AI Studio generates a flat file structure with everything at the root level:
 
 ```
-# AI Studio output (exemple-bad-aistudio/)
+# AI Studio output (examples/before/)
 App.tsx
 index.html
 index.tsx
@@ -36,10 +36,8 @@ Production projects use a feature-based structure inside `src/`:
 # Production structure (DahuAdmin / place2work pattern)
 src/
 ├── components/
-│   └── ui/                    # Shared UI primitives
-│       ├── Button.tsx
-│       ├── Input.tsx
-│       └── index.ts           # Barrel export
+│   └── common/                # Shared components (ErrorBoundary, etc.)
+│       └── ErrorBoundary.tsx
 ├── features/
 │   └── cv-optimizer/          # Feature folder
 │       ├── components/
@@ -55,8 +53,9 @@ src/
 │       └── index.ts
 ├── config/
 │   └── env.ts                 # Environment configuration
-├── hooks/                     # Shared custom hooks
-├── lib/                       # Third-party wrappers (i18n, etc.)
+├── i18n/                      # i18n config + locale files
+│   ├── config.ts
+│   └── locales/fr/common.json
 ├── utils/
 │   └── cn.ts                  # Tailwind className utility
 ├── App.tsx
@@ -112,7 +111,7 @@ import { Header, ResumeForm } from './features/cv-optimizer/components';
 2. **Feature folders for domain logic** — group related components, services, types, and constants under `src/features/<name>/`.
 3. **Named exports only** — replace every `export default X` with `export function X` or `export const X`.
 4. **Barrel exports** — each folder with multiple exports gets an `index.ts` that re-exports everything.
-5. **Shared UI in `src/components/ui/`** — reusable presentational components (Button, Input, Card) go here, not in feature folders.
+5. **Shared components in `src/components/common/`** — cross-cutting concerns (ErrorBoundary, Layout) go here, not in feature folders.
 6. **Move `types.ts`** — split into feature-specific types (`src/features/<name>/types.ts`).
 7. **Move `services/`** — colocate services with their feature, or place shared services in `src/services/`.
 8. **Delete `metadata.json`** — this is an AI Studio artifact with no production use.

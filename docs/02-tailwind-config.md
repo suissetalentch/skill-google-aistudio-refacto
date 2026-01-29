@@ -5,12 +5,12 @@
 AI Studio loads Tailwind via CDN and uses raw className strings without composition utilities:
 
 ```html
-<!-- exemple-bad-aistudio/index.html -->
+<!-- examples/before/index.html -->
 <script src="https://cdn.tailwindcss.com"></script>
 ```
 
 ```tsx
-// exemple-bad-aistudio/components/ResumeForm.tsx
+// examples/before/components/ResumeForm.tsx
 <button
   className={`relative w-full py-4 px-6 rounded-xl font-semibold text-white transition-all overflow-hidden flex items-center justify-center gap-3 ${
     isLoading || !text.trim()

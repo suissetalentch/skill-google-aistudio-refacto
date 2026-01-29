@@ -5,7 +5,7 @@
 AI Studio exposes API keys in client code and mixes prompts with service logic:
 
 ```ts
-// exemple-bad-aistudio/vite.config.ts — API key injected into client bundle
+// examples/before/vite.config.ts — API key injected into client bundle
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 ```
 
 ```ts
-// exemple-bad-aistudio/services/geminiService.ts
+// examples/before/services/geminiService.ts
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

@@ -5,7 +5,7 @@
 AI Studio produces code with no error boundaries, unsafe parsing, and AI Studio artifacts:
 
 ```tsx
-// exemple-bad-aistudio/App.tsx — no ErrorBoundary
+// examples/before/App.tsx — no ErrorBoundary
 const App: React.FC = () => {
   // If any child throws, the entire app crashes with a white screen
   return (
@@ -19,7 +19,7 @@ const App: React.FC = () => {
 ```
 
 ```ts
-// exemple-bad-aistudio/services/geminiService.ts — unsafe JSON.parse
+// examples/before/services/geminiService.ts — unsafe JSON.parse
 const rawJson = response.text;
 const data = JSON.parse(rawJson);  // Crashes if AI returns malformed JSON
 
@@ -32,7 +32,7 @@ const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
 ```
 
 ```json
-// exemple-bad-aistudio/metadata.json — AI Studio artifact
+// examples/before/metadata.json — AI Studio artifact
 {
   "name": "Grenoble Career Optimizer",
   "description": "A premium CV optimizer...",

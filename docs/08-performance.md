@@ -5,7 +5,7 @@
 AI Studio loads everything at once with no code splitting and uses runtime ESM imports:
 
 ```html
-<!-- exemple-bad-aistudio/index.html -->
+<!-- examples/before/index.html -->
 <script type="importmap">
 {
   "imports": {
@@ -19,7 +19,7 @@ AI Studio loads everything at once with no code splitting and uses runtime ESM i
 ```
 
 ```tsx
-// exemple-bad-aistudio/App.tsx — all components imported eagerly
+// examples/before/App.tsx — all components imported eagerly
 import Header from './components/Header';
 import ResumeForm from './components/ResumeForm';
 import ResumePreview from './components/ResumePreview';
@@ -27,7 +27,7 @@ import MarketInsights from './components/MarketInsights';
 ```
 
 ```ts
-// exemple-bad-aistudio/vite.config.ts — no chunks
+// examples/before/vite.config.ts — no chunks
 export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
@@ -164,7 +164,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-ui': ['lucide-react'],
-          'vendor-utils': ['axios', 'clsx', 'tailwind-merge'],
+          'vendor-utils': ['clsx', 'tailwind-merge', 'zod'],
           'vendor-i18n': ['i18next', 'react-i18next'],
         }
       }
