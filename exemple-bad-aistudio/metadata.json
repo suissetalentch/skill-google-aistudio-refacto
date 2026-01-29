@@ -1,0 +1,7 @@
+{
+  "name": "Grenoble Career Optimizer",
+  "description": "A premium CV optimizer and market analyzer specifically tailored for the Grenoble region. It updates your experience, identifies the highest-paying roles for your profile, and generates a professional resume.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
