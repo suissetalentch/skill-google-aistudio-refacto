@@ -38,12 +38,12 @@ const App: React.FC = () => {
 Issues:
 - **All state in App** — becomes unmanageable as the app grows
 - **Prop drilling** — callbacks and state passed through multiple component layers
-- **No separation** — loading, error, and data states mixed with UI logic
-- **No persistence** — state lost on refresh
+- **Boolean isLoading** — can't distinguish idle from error. Impossible states are possible (isLoading=true AND error="something")
+- **No state machine** — transitions between states are implicit
 
 ## The Standard
 
-Use this decision matrix to pick the right approach:
+### Decision matrix
 
 | State type | Solution | When |
 |------------|----------|------|
@@ -53,126 +53,94 @@ Use this decision matrix to pick the right approach:
 | Form state | **React Hook Form** | Complex forms (see doc 09) |
 | Local UI state | **useState** | Toggles, modals, single-component state |
 
-### Zustand pattern (place2work)
+### State machine pattern
+
+Replace boolean flags with a discriminated union status:
 
 ```ts
-// place2work/frontend/src/store/authStore.ts
-import { create } from 'zustand';
-
-interface AuthState {
-  user: UserResponse | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  setUser: (user: UserResponse | null) => void;
-  setLoading: (loading: boolean) => void;
-  logout: () => void;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: true,
-
-  setUser: (user) =>
-    set({
-      user,
-      isAuthenticated: !!user,
-      isLoading: false,
-    }),
-
-  setLoading: (loading) =>
-    set({ isLoading: loading }),
-
-  logout: () =>
-    set({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-    }),
-}));
+type RequestStatus = 'idle' | 'pending' | 'success' | 'error';
 ```
+
+This prevents impossible states:
+- `idle` → no request yet
+- `pending` → request in flight
+- `success` → data received
+- `error` → request failed
 
 ## Before / After
 
-### Before (AI Studio — prop drilling)
-
-```tsx
-// App.tsx — everything in one place
-const App = () => {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-
-  const handleProcessCV = async (text, skills) => { /* ... */ };
-
-  return (
-    <ResumeForm onSubmit={handleProcessCV} isLoading={loading} />
-  );
-};
-```
-
-### After (Production — Zustand store)
+### Before (boolean flags)
 
 ```ts
+interface CVState {
+  result: AnalysisResponse | null;
+  isLoading: boolean;  // ← boolean can't prevent impossible states
+  error: string | null;
+}
+```
+
+### After (state machine)
+
+```ts
+// src/features/cv-optimizer/types.ts
+export type RequestStatus = 'idle' | 'pending' | 'success' | 'error';
+
 // src/features/cv-optimizer/store/useCVStore.ts
 import { create } from 'zustand';
-import type { AnalysisResponse } from '../types';
+import type { AnalysisResponse, RequestStatus } from '../types';
 
 interface CVState {
   result: AnalysisResponse | null;
-  isLoading: boolean;
+  status: RequestStatus;
   error: string | null;
-  setResult: (result: AnalysisResponse | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setResult: (result: AnalysisResponse) => void;
+  setPending: () => void;
+  setError: (error: string) => void;
   reset: () => void;
 }
 
 export const useCVStore = create<CVState>((set) => ({
   result: null,
-  isLoading: false,
+  status: 'idle',
   error: null,
 
-  setResult: (result) => set({ result, isLoading: false, error: null }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error, isLoading: false }),
-  reset: () => set({ result: null, isLoading: false, error: null }),
+  setResult: (result) => set({ result, status: 'success', error: null }),
+  setPending: () => set({ status: 'pending', error: null }),
+  setError: (error) => set({ error, status: 'error' }),
+  reset: () => set({ result: null, status: 'idle', error: null }),
 }));
 ```
+
+### Consumer usage
 
 ```tsx
 // src/features/cv-optimizer/components/ResumeForm.tsx
 import { useCVStore } from '../store/useCVStore';
 
-interface ResumeFormProps {
-  onSubmit: (data: CVFormData) => void;
-}
-
 export function ResumeForm({ onSubmit }: ResumeFormProps) {
-  const { isLoading } = useCVStore();
-  // isLoading read from store (no prop drilling)
-  // onSubmit kept as prop — App orchestrates the submission logic
+  const { status } = useCVStore();
+  const isPending = status === 'pending';
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <button disabled={isLoading}>Submit</button>
+      <button disabled={isPending} aria-busy={isPending}>Submit</button>
     </form>
   );
 }
 ```
 
-**Design choice:** Read-only state (`isLoading`, `error`, `result`) comes from the store.
+**Design choice:** Read-only state (`status`, `error`, `result`) comes from the store.
 The `onSubmit` callback remains a prop because `App` orchestrates the submission workflow
-(setting loading, calling the service, updating the store). This is an acceptable hybrid —
+(calling the service, updating the store). This is an acceptable hybrid —
 stores own shared state, parent owns orchestration.
-```
 
 ## Rules
 
 1. **Install Zustand** — `npm install zustand` for global state management.
-2. **One store per feature** — create `store/use<Feature>Store.ts` inside each feature folder.
-3. **Keep stores flat** — avoid nested state objects. Zustand works best with flat state.
-4. **Use selectors** — `const isLoading = useCVStore(s => s.isLoading)` to avoid unnecessary re-renders.
-5. **Prop drilling limit: 2 levels** — if a prop passes through more than 2 components, extract to a store or context.
-6. **Context for scoped state** — if state is only needed within a feature subtree, use React Context instead of Zustand.
+2. **Use status union, not boolean** — `'idle' | 'pending' | 'success' | 'error'` instead of `isLoading: boolean`.
+3. **One store per feature** — create `store/use<Feature>Store.ts` inside each feature folder.
+4. **Keep stores flat** — avoid nested state objects. Zustand works best with flat state.
+5. **Use selectors** — `const status = useCVStore(s => s.status)` to avoid unnecessary re-renders.
+6. **Prop drilling limit: 2 levels** — if a prop passes through more than 2 components, extract to a store.
 7. **Keep `useState` for local UI** — toggles, modals, and single-component state stay as `useState`.
+8. **Derive booleans from status** — `const isPending = status === 'pending'` in the consumer, not in the store.

@@ -1,23 +1,23 @@
 import { create } from 'zustand';
-import type { AnalysisResponse } from '../types';
+import type { AnalysisResponse, RequestStatus } from '../types';
 
 interface CVState {
   result: AnalysisResponse | null;
-  isLoading: boolean;
+  status: RequestStatus;
   error: string | null;
-  setResult: (result: AnalysisResponse | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setResult: (result: AnalysisResponse) => void;
+  setPending: () => void;
+  setError: (error: string) => void;
   reset: () => void;
 }
 
 export const useCVStore = create<CVState>((set) => ({
   result: null,
-  isLoading: false,
+  status: 'idle',
   error: null,
 
-  setResult: (result) => set({ result, isLoading: false, error: null }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error, isLoading: false }),
-  reset: () => set({ result: null, isLoading: false, error: null }),
+  setResult: (result) => set({ result, status: 'success', error: null }),
+  setPending: () => set({ status: 'pending', error: null }),
+  setError: (error) => set({ error, status: 'error' }),
+  reset: () => set({ result: null, status: 'idle', error: null }),
 }));

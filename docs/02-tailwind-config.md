@@ -22,71 +22,49 @@ AI Studio loads Tailwind via CDN and uses raw className strings without composit
 
 Issues:
 - **CDN = no tree-shaking** — the entire Tailwind CSS is downloaded at runtime
-- **No custom theme** — can't use `colors.dahu` or project-specific design tokens
-- **No `cn()` utility** — className strings grow huge with ternaries, making them unreadable and error-prone when classes conflict
-- **No PostCSS** — can't use `@apply` or plugins
+- **No custom theme** — can't use project-specific design tokens
+- **No `cn()` utility** — className strings grow huge with ternaries
+- **No build pipeline** — can't optimize or purge unused styles
 
-## The Standard
+## The Standard (Tailwind v4)
 
-Production projects install Tailwind as a build dependency with PostCSS and a `cn()` utility:
+Tailwind v4 uses CSS-first configuration. No more `tailwind.config.js` or `postcss.config.js`.
 
 ### Install dependencies
 
 ```bash
-npm install -D tailwindcss postcss autoprefixer
+npm install -D tailwindcss @tailwindcss/vite
 npm install clsx tailwind-merge
 ```
 
-### postcss.config.js
+### vite.config.ts — use the Vite plugin
 
-```js
-export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-};
+```ts
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
 ```
 
-### tailwind.config.js
+### src/index.css — CSS-first config
 
-Based on DahuAdmin's config — extend with project-specific design tokens:
+```css
+@import "tailwindcss";
 
-```js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        // Add project-specific colors here
-        primary: {
-          50: '#eef2ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-        },
-      },
-      fontSize: {
-        'h1': ['clamp(1.5rem, 4vw, 2rem)', { lineHeight: '1.2', fontWeight: '700' }],
-        'h2': ['clamp(1.25rem, 3vw, 1.5rem)', { lineHeight: '1.25', fontWeight: '600' }],
-        'body': ['clamp(0.875rem, 1.5vw, 1rem)', { lineHeight: '1.5' }],
-      },
-    },
-  },
-  plugins: [],
-};
+@theme {
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
 ```
 
 ### src/utils/cn.ts
 
-From place2work — the `cn()` utility that merges Tailwind classes safely:
-
 ```ts
-// place2work/frontend/src/utils/cn.ts
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -95,61 +73,51 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-### index.html — remove CDN
-
-```html
-<!-- REMOVE this line -->
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- REMOVE the import map block -->
-<script type="importmap">...</script>
-```
-
-### src/index.css — add Tailwind directives
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
 ## Before / After
 
 ### Before (AI Studio)
 
 ```tsx
 <button
-  className={`relative w-full py-4 px-6 rounded-xl font-semibold text-white transition-all overflow-hidden flex items-center justify-center gap-3 ${
-    isLoading || !text.trim()
-      ? 'bg-slate-300 cursor-not-allowed'
-      : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98]'
+  className={`relative w-full py-4 rounded-xl font-semibold text-white ${
+    isLoading ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
   }`}
 >
 ```
 
-### After (Production)
+### After (Tailwind v4 + cn())
 
 ```tsx
 import { cn } from '@/utils/cn';
 
 <button
   className={cn(
-    'relative w-full py-4 px-6 rounded-xl font-semibold text-white',
-    'transition-all overflow-hidden flex items-center justify-center gap-3',
-    isLoading || !text.trim()
+    'relative w-full py-4 rounded-xl font-semibold text-white',
+    isPending
       ? 'bg-slate-300 cursor-not-allowed'
-      : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98]'
+      : 'bg-indigo-600 hover:bg-indigo-700'
   )}
 >
+```
+
+### Migration from v3 to v4
+
+```
+DELETE: postcss.config.js
+DELETE: tailwind.config.js
+UPDATE: vite.config.ts → add @tailwindcss/vite plugin
+UPDATE: index.css → replace @tailwind directives with @import "tailwindcss"
+UPDATE: index.css → move theme.extend colors to @theme {} block
+UPDATE: package.json → remove postcss, autoprefixer; add @tailwindcss/vite, tailwindcss v4
 ```
 
 ## Rules
 
 1. **Remove CDN script** — delete `<script src="https://cdn.tailwindcss.com">` from index.html.
-2. **Install build-time Tailwind** — `tailwindcss`, `postcss`, `autoprefixer` as devDependencies.
-3. **Create config files** — `tailwind.config.js` and `postcss.config.js` at project root.
-4. **Add Tailwind directives** — `@tailwind base/components/utilities` in CSS entry point.
-5. **Create `cn()` utility** — install `clsx` + `tailwind-merge`, create `src/utils/cn.ts`.
-6. **Refactor conditional classNames** — replace ternary concatenation with `cn()` calls.
-7. **Extract design tokens** — move repeated colors, spacing, and font sizes to `theme.extend` in tailwind.config.js.
-8. **Update content paths** — ensure `content` array in tailwind.config.js covers all source files in `src/`.
+2. **Use Tailwind v4 Vite plugin** — `@tailwindcss/vite` replaces PostCSS setup entirely.
+3. **Delete v3 config files** — remove `tailwind.config.js` and `postcss.config.js`.
+4. **Use `@import "tailwindcss"`** — replaces the three `@tailwind` directives.
+5. **Use `@theme {}` block** — custom colors and fonts go in CSS, not JavaScript config.
+6. **Create `cn()` utility** — install `clsx` + `tailwind-merge`, create `src/utils/cn.ts`.
+7. **Refactor conditional classNames** — replace ternary concatenation with `cn()` calls.
+8. **Use `tailwind-merge` v3** — compatible with Tailwind v4.

@@ -35,3 +35,5 @@ export interface AnalysisResponse {
   updatedCV: CVData;
   insight: MarketInsight;
 }
+
+export type RequestStatus = 'idle' | 'pending' | 'success' | 'error';

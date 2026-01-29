@@ -27,70 +27,83 @@ export async function analyzeAndOptimizeCV(rawCVText: string): Promise<AnalysisR
   const prompt = `
     Tu es un expert en recrutement de haut niveau spécialisé dans le marché
     de l'emploi à Grenoble (Silicon Valley française).
-
-    IMPORTANT : L'utilisateur vient d'obtenir son Master 2...
     // ... 30+ lines of prompt inside the function
   `;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
     contents: prompt,
-    // ...
   });
 
   const rawJson = response.text;
   const data = JSON.parse(rawJson);  // No try/catch!
-  // ...
 }
 ```
 
 Issues:
-- **API key in client bundle** — `define` in vite.config.ts inlines the key into JavaScript. Anyone can extract it from browser DevTools.
-- **No service abstraction** — AI SDK called directly with no error handling layer.
-- **Prompt mixed with code** — 30-line prompt string embedded in the function makes it unmaintainable.
-- **Unsafe JSON.parse** — no try/catch around parsing AI response.
-- **No typed API client** — no interceptors, no auth headers, no error normalization.
+- **API key in client bundle** — `define` inlines the key into JavaScript
+- **No service abstraction** — AI SDK called directly with no error handling
+- **Prompt mixed with code** — 30-line prompt string embedded in function
+- **Unsafe JSON.parse** — no try/catch around parsing AI response
+- **No typed API client** — no timeout, no abort, no error normalization
 
 ## The Standard
 
-### Environment configuration (place2work pattern)
+### Environment configuration
 
 ```ts
-// place2work/frontend/src/config/env.ts
+// src/config/env.ts
 export const getApiUrl = (): string => {
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || 'http://localhost:8001/api/v1';
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
-  return import.meta.env.VITE_API_URL || '/api/v1';
+  return import.meta.env.VITE_API_URL || '/api';
 };
 
 export const config = {
   apiUrl: getApiUrl(),
   environment: import.meta.env.DEV ? 'development' : 'production',
+  appName: import.meta.env.VITE_APP_NAME || 'App',
 } as const;
 ```
 
-### Axios client with interceptors (place2work pattern)
+### Native fetch with timeout and abort
 
 ```ts
-// place2work/frontend/src/services/apiClient.ts
-import axios from 'axios';
+// src/features/cv-optimizer/services/cvService.ts
 import { config } from '@/config/env';
 
-export const apiClient = axios.create({
-  baseURL: config.apiUrl,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-  withCredentials: true,
-});
+const API_TIMEOUT_MS = 60_000;
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // Handle 401, network errors, transform to standard format
-    // ...
+export async function analyzeCV(
+  cvText: string,
+  additionalSkills: string,
+  signal?: AbortSignal,
+): Promise<AnalysisResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  const combinedSignal = signal
+    ? AbortSignal.any([signal, controller.signal])
+    : controller.signal;
+
+  try {
+    const response = await fetch(`${config.apiUrl}/cv/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvText, additionalSkills }),
+      signal: combinedSignal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    return (await response.json()) as AnalysisResponse;
+  } finally {
+    clearTimeout(timeoutId);
   }
-);
+}
 ```
 
 ## Before / After
@@ -103,21 +116,32 @@ define: {
   'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
 }
 
-// AFTER — vite.config.ts (remove define block entirely)
+// AFTER — remove define block entirely
 // API key should NEVER be in the frontend.
 // Move AI calls to a backend API proxy.
 ```
 
-If no backend exists yet, create a minimal proxy:
+### Step 2: Replace axios with native fetch
 
 ```ts
-// AFTER — src/config/env.ts
-export const config = {
-  apiUrl: import.meta.env.VITE_API_URL || '/api',
-} as const;
+// BEFORE — axios
+import axios from 'axios';
+const apiClient = axios.create({ baseURL: config.apiUrl, timeout: 60000 });
+const response = await apiClient.post('/cv/analyze', { cvText });
+return response.data;
+
+// AFTER — native fetch + AbortController
+const response = await fetch(`${config.apiUrl}/cv/analyze`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ cvText }),
+  signal: controller.signal,
+});
+if (!response.ok) throw new Error(`API error: ${response.status}`);
+return await response.json();
 ```
 
-### Step 2: Extract prompts to constants
+### Step 3: Extract prompts to constants
 
 ```ts
 // BEFORE — prompt inside function
@@ -125,13 +149,7 @@ const prompt = `Tu es un expert en recrutement...${rawCVText}`;
 
 // AFTER — src/features/cv-optimizer/constants/prompts.ts
 export const CV_ANALYSIS_PROMPT = `
-Tu es un expert en recrutement de haut niveau spécialisé dans le marché
-de l'emploi à Grenoble (Silicon Valley française).
-
-INSTRUCTIONS POUR LE CV :
-1. Analyse le texte du CV fourni.
-2. Réécriture des missions en réalisations orientées résultats.
-3. Intègre les compétences additionnelles fournies.
+Tu es un expert en recrutement de haut niveau...
 
 CV Input :
 {{cvText}}
@@ -139,25 +157,6 @@ CV Input :
 Compétences additionnelles :
 {{additionalSkills}}
 `;
-```
-
-### Step 3: Create a typed service layer
-
-```ts
-// AFTER — src/features/cv-optimizer/services/cvService.ts
-import { apiClient } from '@/services/apiClient';
-import type { AnalysisResponse } from '../types';
-
-export async function analyzeCV(
-  cvText: string,
-  additionalSkills: string
-): Promise<AnalysisResponse> {
-  const response = await apiClient.post<AnalysisResponse>('/cv/analyze', {
-    cvText,
-    additionalSkills,
-  });
-  return response.data;
-}
 ```
 
 ### Step 4: Safe JSON parsing
@@ -179,11 +178,11 @@ function safeJsonParse<T>(json: string): T {
 
 ## Rules
 
-1. **Never expose API keys in the frontend** — remove all `process.env.API_KEY` and Vite `define` blocks that inject secrets.
-2. **Use `VITE_` prefix only for public config** — only `VITE_API_URL`, `VITE_APP_NAME` etc. Never `VITE_API_KEY`.
-3. **Create `config/env.ts`** — centralize environment configuration following the place2work pattern.
-4. **Create `services/apiClient.ts`** — use Axios with interceptors for auth, error handling, and logging.
-5. **Extract prompts to `constants/`** — AI prompts are content, not code. Keep them in dedicated constant files.
-6. **Wrap JSON.parse in try/catch** — AI responses can be malformed. Always handle parse failures.
+1. **Never expose API keys in the frontend** — remove all `process.env.API_KEY` and Vite `define` blocks.
+2. **Use `VITE_` prefix only for public config** — only `VITE_API_URL`, `VITE_APP_NAME`. Never `VITE_API_KEY`.
+3. **Use native fetch** — no axios dependency needed. Use `AbortController` for timeouts and cancellation.
+4. **Check `response.ok`** — fetch doesn't throw on HTTP errors, you must check manually.
+5. **Extract prompts to `constants/`** — AI prompts are content, not code.
+6. **Wrap JSON.parse in try/catch** — AI responses can be malformed.
 7. **Type service responses** — every API call should have typed request and response interfaces.
-8. **Move AI SDK calls to a backend** — client-side AI SDK usage exposes your API key. Proxy through your own API.
+8. **Move AI SDK calls to a backend** — client-side AI SDK usage exposes your API key.

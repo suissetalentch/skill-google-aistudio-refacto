@@ -91,7 +91,7 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-charts': ['recharts'],
           'vendor-ui': ['lucide-react'],
-          'vendor-utils': ['axios', 'date-fns', 'zod'],
+          'vendor-utils': ['date-fns', 'zod'],
         }
       }
     },

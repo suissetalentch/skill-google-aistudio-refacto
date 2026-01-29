@@ -10,7 +10,7 @@ export function MarketInsights({ insight }: MarketInsightsProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-2xl p-8 text-white shadow-xl">
+    <section aria-label={t('market.title')} className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-2xl p-8 text-white shadow-xl">
       <div className="flex items-start justify-between">
         <div>
           <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded-full border border-blue-500/30 mb-4">
@@ -58,9 +58,10 @@ export function MarketInsights({ insight }: MarketInsightsProps) {
                 href={source.uri}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`${source.title} (${t('market.externalLink')})`}
                 className="text-xs bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-colors flex items-center gap-2 border border-white/5"
               >
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 {source.title.length > 30
                   ? `${source.title.substring(0, 30)}...`
                   : source.title}
@@ -69,6 +70,6 @@ export function MarketInsights({ insight }: MarketInsightsProps) {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

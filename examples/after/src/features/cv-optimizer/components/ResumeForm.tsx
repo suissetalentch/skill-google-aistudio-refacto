@@ -14,7 +14,8 @@ interface ResumeFormProps {
 
 export function ResumeForm({ onSubmit }: ResumeFormProps) {
   const { t } = useTranslation();
-  const { isLoading } = useCVStore();
+  const { status } = useCVStore();
+  const isPending = status === 'pending';
   const [msgIdx, setMsgIdx] = useState(0);
 
   const {
@@ -27,7 +28,7 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
   });
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isPending) {
       setMsgIdx(0);
       return;
     }
@@ -35,7 +36,7 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
       setMsgIdx((prev) => (prev + 1) % LOADING_STEPS.length);
     }, LOADING_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [isLoading]);
+  }, [isPending]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
@@ -43,31 +44,37 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
         <h2 className="text-2xl font-bold text-slate-800">{t('form.title')}</h2>
         <p className="text-slate-500 mt-1">{t('form.description')}</p>
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label={t('form.title')}>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <label htmlFor="cvText" className="block text-sm font-semibold text-slate-700 mb-2">
             {t('form.cvLabel')}
           </label>
           <textarea
+            id="cvText"
             className="w-full h-80 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none font-mono text-sm"
             placeholder={CV_PLACEHOLDER}
-            disabled={isLoading}
+            disabled={isPending}
+            aria-invalid={errors.cvText ? 'true' : undefined}
+            aria-describedby={errors.cvText ? 'cvText-error' : undefined}
             {...register('cvText')}
           />
           {errors.cvText && (
-            <p className="text-red-500 text-sm mt-1">{errors.cvText.message}</p>
+            <p id="cvText-error" role="alert" className="text-red-500 text-sm mt-1">
+              {errors.cvText.message}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
+          <label htmlFor="additionalSkills" className="block text-sm font-semibold text-slate-700 mb-2">
             {t('form.skillsLabel')}
           </label>
           <input
+            id="additionalSkills"
             type="text"
             className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
             placeholder={t('form.skillsPlaceholder')}
-            disabled={isLoading}
+            disabled={isPending}
             {...register('additionalSkills')}
           />
           <p className="mt-1.5 text-xs text-slate-400">{t('form.skillsHint')}</p>
@@ -75,18 +82,19 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isPending}
           className={cn(
             'relative w-full py-4 px-6 rounded-xl font-semibold text-white',
             'transition-all overflow-hidden flex items-center justify-center gap-3',
-            isLoading
+            isPending
               ? 'bg-slate-300 cursor-not-allowed'
               : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98]',
           )}
+          aria-busy={isPending}
         >
-          {isLoading ? (
+          {isPending ? (
             <div className="flex items-center gap-3">
-              <Loader2 className="h-5 w-5 text-white animate-spin" />
+              <Loader2 className="h-5 w-5 text-white animate-spin" aria-hidden="true" />
               <span className="text-sm font-bold tracking-wide">
                 {t(LOADING_STEPS[msgIdx])}
               </span>
@@ -94,7 +102,7 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
           ) : (
             <>
               {t('form.submitButton')}
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </>
           )}
         </button>

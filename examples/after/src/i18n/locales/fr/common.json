@@ -44,7 +44,8 @@
     "bestJob": "Poste le plus rémunérateur",
     "salary": "Fourchette Salariale",
     "reasoning": "Pourquoi ce profil à Grenoble ?",
-    "sources": "Sources vérifiées"
+    "sources": "Sources vérifiées",
+    "externalLink": "lien externe"
   },
   "resume": {
     "contact": "Contact",

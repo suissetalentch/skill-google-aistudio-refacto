@@ -26,18 +26,19 @@ const MarketInsights = lazy(() =>
 function PageLoader() {
   return (
     <div className="min-h-[200px] flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" aria-hidden="true" />
+      <span className="sr-only">Loading...</span>
     </div>
   );
 }
 
 export function App() {
   const { t } = useTranslation();
-  const { result, error, isLoading, setLoading, setResult, setError, reset } = useCVStore();
+  const { result, error, status, setPending, setResult, setError, reset } = useCVStore();
+  const isPending = status === 'pending';
 
   const handleSubmit = async (data: CVFormData) => {
-    setLoading(true);
-    setError(null);
+    setPending();
     try {
       const response = await analyzeCV(data.cvText, data.additionalSkills ?? '');
       setResult(response);
@@ -55,8 +56,8 @@ export function App() {
 
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             {error}
           </div>
         )}
@@ -92,8 +93,9 @@ export function App() {
               <button
                 onClick={reset}
                 className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+                aria-label={t('form.backButton')}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5" aria-hidden="true" />
                 {t('form.backButton')}
               </button>
               <button
@@ -102,8 +104,9 @@ export function App() {
                   'bg-slate-900 text-white px-6 py-2 rounded-lg font-semibold',
                   'hover:bg-slate-800 transition-all flex items-center gap-2',
                 )}
+                aria-label={t('form.printButton')}
               >
-                <Printer className="w-5 h-5" />
+                <Printer className="w-5 h-5" aria-hidden="true" />
                 {t('form.printButton')}
               </button>
             </div>
