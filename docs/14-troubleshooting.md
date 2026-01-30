@@ -276,6 +276,70 @@ export default withTranslation()(ErrorBoundary)
 
 ---
 
+## Security
+
+### Error: API key visible in browser DevTools
+
+**Symptom:** The API key appears in the network tab or JavaScript bundle.
+
+**Cause:** `VITE_API_KEY` or `process.env.API_KEY` inlined by Vite's `define` config.
+
+**Fix:**
+1. Remove any `VITE_API_KEY`, `VITE_SECRET`, `VITE_TOKEN` from `.env`
+2. Remove the `define` block from `vite.config.ts`
+3. Move AI SDK calls to a backend proxy
+4. Frontend should only call your own API: `fetch('/api/cv/analyze', ...)`
+
+If no backend proxy exists, **STOP** — the API key cannot be secured without one.
+
+### Error: `.env` committed to git
+
+**Symptom:** `git log -- .env` shows commits containing the `.env` file.
+
+**Cause:** `.env` was not in `.gitignore` before the first commit.
+
+**Fix:**
+1. Add `.env` patterns to `.gitignore`:
+```gitignore
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+```
+2. Remove from git tracking:
+```bash
+git rm --cached .env
+git commit -m "fix: remove .env from tracking"
+```
+3. **Rotate all secrets** — any key committed to git should be considered compromised.
+
+### Error: Zod validation shows i18n key instead of translated message
+
+**Symptom:** Error message shows `"validation.cvMinLength"` instead of the translated string.
+
+**Cause:** Zod messages are i18n keys that need to be resolved with `t()` at render time.
+
+**Fix:** Wrap the error message in `t()`:
+```tsx
+// WRONG — displays the raw key
+{errors.cvText && <p>{errors.cvText.message}</p>}
+
+// CORRECT — resolves the i18n key
+{errors.cvText && <p>{t(errors.cvText.message ?? '')}</p>}
+```
+
+Ensure the key exists in your translation file (`common.json`):
+```json
+{
+  "validation": {
+    "cvMinLength": "Le CV doit contenir au moins 50 caractères"
+  }
+}
+```
+
+---
+
 ## General
 
 ### Error: Build fails with chunk errors

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { cvFormSchema, type CVFormData } from '../schemas/cvForm';
-import { CV_PLACEHOLDER, LOADING_STEPS, LOADING_INTERVAL_MS } from '../constants/defaults';
+import { LOADING_STEPS, LOADING_INTERVAL_MS } from '../constants/defaults';
 import { useCVStore } from '../store/useCVStore';
 
 interface ResumeFormProps {
@@ -52,7 +52,7 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
           <textarea
             id="cvText"
             className="w-full h-80 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none font-mono text-sm"
-            placeholder={CV_PLACEHOLDER}
+            placeholder={t('form.cvPlaceholder')}
             disabled={isPending}
             aria-invalid={errors.cvText ? 'true' : undefined}
             aria-describedby={errors.cvText ? 'cvText-error' : undefined}
@@ -60,7 +60,7 @@ export function ResumeForm({ onSubmit }: ResumeFormProps) {
           />
           {errors.cvText && (
             <p id="cvText-error" role="alert" className="text-red-500 text-sm mt-1">
-              {errors.cvText.message}
+              {t(errors.cvText.message ?? '')}
             </p>
           )}
         </div>

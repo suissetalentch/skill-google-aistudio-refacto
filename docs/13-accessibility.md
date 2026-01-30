@@ -80,7 +80,7 @@ Production-grade accessibility from real projects (DahuAdmin, Place2Work):
   {isPending && (
     <>
       <Loader2 className="animate-spin" aria-hidden="true" />
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{t('common.loading')}</span>
     </>
   )}
   {t('form.submit')}
@@ -109,7 +109,7 @@ Production-grade accessibility from real projects (DahuAdmin, Place2Work):
 
 // AFTER
 <Loader2 className="animate-spin" aria-hidden="true" />
-<span className="sr-only">Loading...</span>
+<span className="sr-only">{t('common.loading')}</span>
 ```
 
 ### Step 3: Form labels use htmlFor
@@ -178,7 +178,7 @@ Production-grade accessibility from real projects (DahuAdmin, Place2Work):
   {isPending && (
     <>
       <Loader2 className="animate-spin" aria-hidden="true" />
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{t('common.loading')}</span>
     </>
   )}
   {t('form.submit')}
@@ -196,3 +196,4 @@ Production-grade accessibility from real projects (DahuAdmin, Place2Work):
 7. **External links use `rel="noopener noreferrer"` and `aria-label` with "(external link)"** — Security + context
 8. **Loading buttons use `aria-busy`** — Communicates processing state
 9. **Sections use `aria-label` for landmark navigation** — Example: `<section aria-label="Job applications">`
+10. **`sr-only` text uses `t()` for i18n** — screen reader text is user-facing and must be translated. Use `{t('common.loading')}` not `"Loading..."`.

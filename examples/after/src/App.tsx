@@ -24,10 +24,12 @@ const MarketInsights = lazy(() =>
 );
 
 function PageLoader() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-[200px] flex items-center justify-center">
       <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" aria-hidden="true" />
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{t('common.loading')}</span>
     </div>
   );
 }

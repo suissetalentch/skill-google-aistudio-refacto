@@ -3,11 +3,11 @@ import { z } from 'zod';
 export const cvFormSchema = z.object({
   cvText: z
     .string()
-    .min(50, 'Le CV doit contenir au moins 50 caractères')
-    .max(10000, 'Le CV ne doit pas dépasser 10 000 caractères'),
+    .min(50, 'validation.cvMinLength')
+    .max(10000, 'validation.cvMaxLength'),
   additionalSkills: z
     .string()
-    .max(500, 'Les compétences ne doivent pas dépasser 500 caractères')
+    .max(500, 'validation.skillsMaxLength')
     .optional()
     .default(''),
 });

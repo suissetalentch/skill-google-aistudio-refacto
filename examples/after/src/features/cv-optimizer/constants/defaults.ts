@@ -1,14 +1,3 @@
-export const CV_PLACEHOLDER = `[Nom complet]
-[Poste actuel]
-[email] | [téléphone]
-[Ville], FRANCE
-
-EXPÉRIENCES:
-- [Entreprise] ([Poste]): [Période]. [Description des missions].
-
-FORMATION:
-- [École]: [Diplôme] ([Année])`;
-
 export const LOADING_INTERVAL_MS = 1800;
 
 export const LOADING_STEPS = [

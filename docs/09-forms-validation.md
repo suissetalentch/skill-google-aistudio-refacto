@@ -114,17 +114,21 @@ import { z } from 'zod';
 export const cvFormSchema = z.object({
   cvText: z
     .string()
-    .min(50, 'Le CV doit contenir au moins 50 caractères')
-    .max(10000, 'Le CV ne doit pas dépasser 10 000 caractères'),
+    .min(50, 'validation.cvMinLength')    // i18n key, resolved with t() at render
+    .max(10000, 'validation.cvMaxLength'),
   additionalSkills: z
     .string()
-    .max(500, 'Les compétences ne doivent pas dépasser 500 caractères')
+    .max(500, 'validation.skillsMaxLength')
     .optional()
     .default(''),
 });
 
 export type CVFormData = z.infer<typeof cvFormSchema>;
 ```
+
+> **Note:** Zod messages use i18n keys (not hardcoded French strings). The
+> component resolves them with `t(errors.field.message ?? '')` at render time.
+> See [docs/04-i18n-setup.md](04-i18n-setup.md) for the full Zod + i18n pattern.
 
 ### Step 3: Use React Hook Form
 

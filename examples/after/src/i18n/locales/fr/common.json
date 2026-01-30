@@ -1,4 +1,7 @@
 {
+  "common": {
+    "loading": "Chargement en cours..."
+  },
   "header": {
     "title": "Grenoble Career Scout",
     "subtitle": "Optimisez votre CV pour le marché alpin"
@@ -7,7 +10,7 @@
     "title": "Optimiseur de Carrière - Grenoble",
     "description": "Vos données ont été actualisées (Master 2 Obtenu). Cliquez sur \"Optimiser\".",
     "cvLabel": "Contenu principal du CV",
-    "cvPlaceholder": "Collez votre CV ici...",
+    "cvPlaceholder": "[Nom complet]\n[Poste actuel]\n[email] | [téléphone]\n[Ville], FRANCE\n\nEXPÉRIENCES:\n- [Entreprise] ([Poste]): [Période]. [Description des missions].\n\nFORMATION:\n- [École]: [Diplôme] ([Année])",
     "skillsLabel": "Compétences Additionnelles (optionnel)",
     "skillsPlaceholder": "Ex: Permis B, Photoshop, Management Agile, SQL...",
     "skillsHint": "Séparez les compétences par des virgules.",
@@ -65,6 +68,11 @@
     "boundaryDesc": "L'application a rencontré un problème inattendu. Veuillez réessayer ou recharger la page.",
     "retry": "Réessayer",
     "reload": "Recharger la page"
+  },
+  "validation": {
+    "cvMinLength": "Le CV doit contenir au moins 50 caractères",
+    "cvMaxLength": "Le CV ne doit pas dépasser 10 000 caractères",
+    "skillsMaxLength": "Les compétences ne doivent pas dépasser 500 caractères"
   },
   "footer": {
     "copyright": "Grenoble Career Scout. Propulsé par Gemini AI pour des opportunités alpines."

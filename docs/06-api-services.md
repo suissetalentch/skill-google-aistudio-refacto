@@ -176,6 +176,48 @@ function safeJsonParse<T>(json: string): T {
 }
 ```
 
+## Security Checklist
+
+Before deploying, verify all security items:
+
+### `.gitignore` template (minimum)
+
+```gitignore
+# Environment secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+```
+
+### Pre-deployment checks
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| `.env` in `.gitignore` | `grep "^\.env" .gitignore` | Match found |
+| No secrets in `.env.example` | `grep -i "KEY\|SECRET\|TOKEN" .env.example` | Only placeholder values |
+| No `VITE_.*KEY` in source | `grep -r "VITE_.*KEY" src/` | 0 results |
+| No `process.env.API_KEY` | `grep -r "process.env.API_KEY" src/` | 0 results |
+| Backend proxy configured | Check `VITE_API_URL` points to proxy | Not direct AI API |
+
+### `.env.example` format
+
+```env
+# Public config (safe for client bundle)
+VITE_API_URL=http://localhost:3001/api
+VITE_APP_NAME=MyApp
+
+# Server-side only (NEVER prefix with VITE_)
+# GEMINI_API_KEY=your-key-here  ← backend only
+```
+
 ## Rules
 
 1. **Never expose API keys in the frontend** — remove all `process.env.API_KEY` and Vite `define` blocks.
@@ -186,3 +228,4 @@ function safeJsonParse<T>(json: string): T {
 6. **Wrap JSON.parse in try/catch** — AI responses can be malformed.
 7. **Type service responses** — every API call should have typed request and response interfaces.
 8. **Move AI SDK calls to a backend** — client-side AI SDK usage exposes your API key.
+9. **Ensure `.env` is in `.gitignore`** — never commit secret files. Check `.gitignore` includes `.env`, `.env.local`, and `.env.*.local` patterns.

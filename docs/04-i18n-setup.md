@@ -177,6 +177,50 @@ export function Header() {
 }
 ```
 
+## Zod + i18n Pattern
+
+Zod validation messages should use i18n keys instead of hardcoded strings.
+The component resolves the key with `t()` at render time.
+
+### Schema (keys only)
+
+```ts
+// src/features/cv-optimizer/schemas/cvForm.ts
+export const cvFormSchema = z.object({
+  cvText: z
+    .string()
+    .min(50, 'validation.cvMinLength')   // i18n key, NOT hardcoded text
+    .max(10000, 'validation.cvMaxLength'),
+});
+```
+
+### Component (resolve with `t()`)
+
+```tsx
+// In the form component
+const { t } = useTranslation();
+
+{errors.cvText && (
+  <p role="alert" className="text-red-500 text-sm mt-1">
+    {t(errors.cvText.message ?? '')}
+  </p>
+)}
+```
+
+### Translation file
+
+```json
+{
+  "validation": {
+    "cvMinLength": "Le CV doit contenir au moins 50 caractères",
+    "cvMaxLength": "Le CV ne doit pas dépasser 10 000 caractères"
+  }
+}
+```
+
+This pattern keeps schemas framework-agnostic (no dependency on `t()` at
+definition time) while ensuring all user-facing text goes through i18n.
+
 ## Rules
 
 1. **Install i18next + react-i18next** — these are the standard i18n libraries for React.
@@ -188,3 +232,4 @@ export function Header() {
 7. **Namespace by domain** — for larger apps, split into `common`, `forms`, `errors`, etc.
 8. **Don't translate dynamic data** — API responses, user input, and computed values stay as-is.
 9. **Handle arrays** — loading messages and lists should use indexed keys (`loading.step1`, `loading.step2`).
+10. **Zod messages use i18n keys** — pass translation keys as Zod error messages, resolve with `t()` at render time. See "Zod + i18n Pattern" above.

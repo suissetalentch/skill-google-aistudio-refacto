@@ -1,3 +1,8 @@
+/**
+ * LLM prompts are intentionally kept in French and NOT passed through i18n.
+ * They are backend/AI instructions, not user-facing UI strings.
+ * Changing the prompt language would alter AI behavior and output quality.
+ */
 export const CV_ANALYSIS_PROMPT = `
 Tu es un expert en recrutement de haut niveau spécialisé dans le marché de l'emploi à Grenoble (Silicon Valley française).
 
